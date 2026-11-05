@@ -432,10 +432,9 @@
             const canvas = document.getElementById('three-canvas');
 
             scene = new THREE.Scene();
-            // Sunny Sky Blue background
-            scene.background = new THREE.Color(0x70c5ce);
+            // High-contrast deep sunset/sky background to never match the dark grey road
+            scene.background = new THREE.Color(0x0a1128);
 
-            // High camera perspective looking down at road
             camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 0.1, 500);
             camera.position.set(0, 5.0, -8.0);
             camera.lookAt(0, 1.0, 15);
@@ -539,16 +538,16 @@
             const segmentGroup = new THREE.Group();
             segmentGroup.position.z = zPos;
 
-            // 1. Solid Dark Charcoal Asphalt Road (ALWAYS VISIBLE)
+            // 1. Distinct Dark Asphalt Road (Never matches background sky)
             const roadGeo = new THREE.PlaneGeometry(roadWidth, 25);
-            const roadMat = new THREE.MeshBasicMaterial({ color: 0x1a1a24 });
+            const roadMat = new THREE.MeshBasicMaterial({ color: 0x1e293b });
             const roadMesh = new THREE.Mesh(roadGeo, roadMat);
             roadMesh.rotation.x = -Math.PI / 2;
             segmentGroup.add(roadMesh);
 
-            // 2. Vibrant Green Side Grass
+            // 2. High-contrast Side Terrain (Dark neon grid/ground)
             const groundGeo = new THREE.PlaneGeometry(150, 25);
-            const groundMat = new THREE.MeshBasicMaterial({ color: 0x22c55e });
+            const groundMat = new THREE.MeshBasicMaterial({ color: 0x0f172a });
             const leftGround = new THREE.Mesh(groundGeo, groundMat);
             leftGround.rotation.x = -Math.PI / 2;
             leftGround.position.set(-75 - roadWidth/2, -0.01, 0);
@@ -562,7 +561,7 @@
 
             // 3. Bright Yellow Dashed Lane Lines
             const lineGeo = new THREE.PlaneGeometry(0.25, 5);
-            const lineMat = new THREE.MeshBasicMaterial({ color: 0xffd700 });
+            const lineMat = new THREE.MeshBasicMaterial({ color: 0xfacc15 });
 
             [-laneWidth/2, laneWidth/2].forEach(xLoc => {
                 for (let k = -10; k <= 10; k += 10) {
@@ -694,15 +693,23 @@
             targetSpeed = Math.max(0, Math.min(targetSpeed, maxCap));
             currentSpeed += (targetSpeed - currentSpeed) * 0.1;
 
+            // FIXED FRONT-STEERING & BANKING MECHANIC (Aage ka hissa pehle ghumega aur natural tilt aayega)
+            let targetRotY = 0;
+            let targetRollZ = 0;
+
             if (inputs.left) {
-                playerX += carData.handling * 25 * delta;
-                playerCarGroup.rotation.y = THREE.MathUtils.lerp(playerCarGroup.rotation.y, -0.15, 0.1);
+                playerX += carData.handling * 28 * delta;
+                targetRotY = -0.22; // Front leads turning left
+                targetRollZ = 0.12;  // Natural banking tilt
             } else if (inputs.right) {
-                playerX -= carData.handling * 25 * delta;
-                playerCarGroup.rotation.y = THREE.MathUtils.lerp(playerCarGroup.rotation.y, 0.15, 0.1);
-            } else {
-                playerCarGroup.rotation.y = THREE.MathUtils.lerp(playerCarGroup.rotation.y, 0, 0.1);
+                playerX -= carData.handling * 28 * delta;
+                targetRotY = 0.22;  // Front leads turning right
+                targetRollZ = -0.12; // Natural banking tilt
             }
+
+            // Smooth interpolation for natural front-steering feel without rear pivot awkwardness
+            playerCarGroup.rotation.y = THREE.MathUtils.lerp(playerCarGroup.rotation.y, targetRotY, 0.2);
+            playerCarGroup.rotation.z = THREE.MathUtils.lerp(playerCarGroup.rotation.z, targetRollZ, 0.2);
 
             const distanceDelta = (currentSpeed / 3.6) * delta;
             distanceTraveled += distanceDelta;
