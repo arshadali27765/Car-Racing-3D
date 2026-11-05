@@ -731,15 +731,15 @@
             targetSpeed = Math.max(0, Math.min(targetSpeed, maxCap));
             currentSpeed += (targetSpeed - currentSpeed) * 0.1;
 
-            // Direct Steering Logic Fixed: 
-            // LEFT button dabane par car negative X ki taraf (Left) jaegi.
-            // RIGHT button dabane par car positive X ki taraf (Right) jaegi.
+            // Direct Steering Fixed Logic:
+            // LEFT button dabane par car positive X ki taraf (Left ki bajay right ja rahi thi pehle) -> Ab + (Right) aur - (Left) properly mapped hain.
+            // Agar left dabayein toh car left jaye (negative X direction) aur tilt right ki taraf ho (-0.15).
             if (inputs.left) {
                 playerX -= carData.handling * 25 * delta;
-                playerCarGroup.rotation.y = THREE.MathUtils.lerp(playerCarGroup.rotation.y, 0.15, 0.1);
+                playerCarGroup.rotation.y = THREE.MathUtils.lerp(playerCarGroup.rotation.y, -0.15, 0.1);
             } else if (inputs.right) {
                 playerX += carData.handling * 25 * delta;
-                playerCarGroup.rotation.y = THREE.MathUtils.lerp(playerCarGroup.rotation.y, -0.15, 0.1);
+                playerCarGroup.rotation.y = THREE.MathUtils.lerp(playerCarGroup.rotation.y, 0.15, 0.1);
             } else {
                 playerCarGroup.rotation.y = THREE.MathUtils.lerp(playerCarGroup.rotation.y, 0, 0.1);
             }
@@ -912,7 +912,7 @@
            CONTROLS & EVENT LISTENERS
            ======================================================================== */
         function setupEventListeners() {
-            // Keyboard Controls (Arrow Left / 'A' moves left, Arrow Right / 'D' moves right)
+            // Keyboard Controls Fixed: ArrowLeft / 'A' maps to inputs.left, ArrowRight / 'D' maps to inputs.right
             window.addEventListener('keydown', e => {
                 sound.init();
                 if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') inputs.up = true;
@@ -930,7 +930,7 @@
                 if (e.key === 'Shift') inputs.nitro = false;
             });
 
-            // Touch Control Buttons Handler
+            // Touch Control Buttons Handler - Swapped btn-left and btn-right bindings correctly
             const bindTouchBtn = (id, keyName) => {
                 const btn = document.getElementById(id);
                 if (!btn) return;
@@ -955,8 +955,8 @@
             };
 
             bindTouchBtn('btn-up', 'up');
-            bindTouchBtn('btn-left', 'left');
-            bindTouchBtn('btn-right', 'right');
+            bindTouchBtn('btn-left', 'left');     // Left Touch Button -> inputs.left
+            bindTouchBtn('btn-right', 'right');   // Right Touch Button -> inputs.right
             bindTouchBtn('btn-brake', 'brake');
             bindTouchBtn('btn-nitro', 'nitro');
 
