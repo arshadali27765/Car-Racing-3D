@@ -701,15 +701,15 @@
             targetSpeed = Math.max(0, Math.min(targetSpeed, maxCap));
             currentSpeed += (targetSpeed - currentSpeed) * 0.1;
 
-            // CORRECTED DIRECTIONAL STEERING LOGIC
-            // Left Button -> Move Left (Negative X)
-            // Right Button -> Move Right (Positive X)
+            // CORRECTED STEERING LOGIC (CAMERA PERSPECTIVE COMPATIBLE)
+            // Left Button -> Move Left (+X) & Tilt Left (-y rotation)
+            // Right Button -> Move Right (-X) & Tilt Right (+y rotation)
             if (inputs.left) {
-                playerX -= carData.handling * 25 * delta;
-                playerCarGroup.rotation.y = THREE.MathUtils.lerp(playerCarGroup.rotation.y, 0.15, 0.1);
-            } else if (inputs.right) {
                 playerX += carData.handling * 25 * delta;
                 playerCarGroup.rotation.y = THREE.MathUtils.lerp(playerCarGroup.rotation.y, -0.15, 0.1);
+            } else if (inputs.right) {
+                playerX -= carData.handling * 25 * delta;
+                playerCarGroup.rotation.y = THREE.MathUtils.lerp(playerCarGroup.rotation.y, 0.15, 0.1);
             } else {
                 playerCarGroup.rotation.y = THREE.MathUtils.lerp(playerCarGroup.rotation.y, 0, 0.1);
             }
