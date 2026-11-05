@@ -434,12 +434,12 @@
             const canvas = document.getElementById('three-canvas');
 
             scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x0a1128); // Vibrant Dark Cyber Sky
-            scene.fog = new THREE.FogExp2(0x0a1128, 0.007);
+            scene.background = new THREE.Color(0x38bdf8); // Sky Blue 
+            scene.fog = new THREE.FogExp2(0x38bdf8, 0.005);
 
-            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 300);
-            camera.position.set(0, 3.4, -6.5);
-            camera.lookAt(0, 1.2, 10);
+            camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 0.1, 300);
+            camera.position.set(0, 4.2, -7.5);
+            camera.lookAt(0, 1.0, 10);
 
             renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: false });
             renderer.setSize(window.innerWidth, window.innerHeight);
@@ -447,11 +447,11 @@
             renderer.shadowMap.enabled = true;
             renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.9);
+            const ambientLight = new THREE.AmbientLight(0xffffff, 1.0);
             scene.add(ambientLight);
 
-            const sunLight = new THREE.DirectionalLight(0xfffaed, 1.4);
-            sunLight.position.set(30, 60, -30);
+            const sunLight = new THREE.DirectionalLight(0xfffaed, 1.5);
+            sunLight.position.set(40, 80, -40);
             sunLight.castShadow = true;
             scene.add(sunLight);
 
@@ -461,56 +461,96 @@
             window.addEventListener('resize', onWindowResize, false);
         }
 
+        // REFERENCE IMAGE JAISI SUPERCAR BUILD FUNCTION
         function buildPlayerCar() {
             if (playerCarGroup) scene.remove(playerCarGroup);
 
             const carData = CAR_DATABASE[selectedCarIndex];
             playerCarGroup = new THREE.Group();
 
-            const bodyGeo = new THREE.BoxGeometry(1.7, 0.6, 3.6);
+            // 1. Main Aerodynamic Body (Low profile supercar shape)
+            const bodyGeo = new THREE.BoxGeometry(1.8, 0.5, 3.8);
             const bodyMat = new THREE.MeshStandardMaterial({ 
                 color: carData.color, 
-                roughness: 0.2, 
-                metalness: 0.8 
+                roughness: 0.15, 
+                metalness: 0.85 
             });
             const bodyMesh = new THREE.Mesh(bodyGeo, bodyMat);
-            bodyMesh.position.y = 0.5;
+            bodyMesh.position.y = 0.45;
             bodyMesh.castShadow = true;
             playerCarGroup.add(bodyMesh);
 
-            const cabinGeo = new THREE.BoxGeometry(1.3, 0.5, 1.8);
-            const cabinMat = new THREE.MeshStandardMaterial({ color: 0x111115, roughness: 0.1 });
+            // 2. Sleek Sloped Cockpit / Glass Cabin
+            const cabinGeo = new THREE.BoxGeometry(1.3, 0.4, 1.7);
+            const cabinMat = new THREE.MeshStandardMaterial({ color: 0x050508, roughness: 0.05, metalness: 0.9 });
             const cabinMesh = new THREE.Mesh(cabinGeo, cabinMat);
-            cabinMesh.position.set(0, 0.95, -0.2);
+            cabinMesh.position.set(0, 0.82, -0.2);
             playerCarGroup.add(cabinMesh);
 
-            const lightGeo = new THREE.BoxGeometry(0.4, 0.12, 0.05);
-            const lightMat = new THREE.MeshBasicMaterial({ color: 0xff0044 });
+            // 3. Rear Wing / Spoiler (Supercar style)
+            const spoilerBarGeo = new THREE.BoxGeometry(1.7, 0.08, 0.4);
+            const spoilerMat = new THREE.MeshStandardMaterial({ color: 0x111115, metalness: 0.8, roughness: 0.2 });
+            const spoilerBar = new THREE.Mesh(spoilerBarGeo, spoilerMat);
+            spoilerBar.position.set(0, 0.85, -1.6);
+            playerCarGroup.add(spoilerBar);
+
+            const spoilerLegGeo = new THREE.BoxGeometry(0.1, 0.25, 0.1);
+            const leftLeg = new THREE.Mesh(spoilerLegGeo, spoilerMat);
+            leftLeg.position.set(-0.6, 0.7, -1.6);
+            const rightLeg = leftLeg.clone();
+            rightLeg.position.x = 0.6;
+            playerCarGroup.add(leftLeg);
+            playerCarGroup.add(rightLeg);
+
+            // 4. Glowing Tail Lights (Reference image ke jaisa bright rear lights)
+            const lightGeo = new THREE.BoxGeometry(0.5, 0.1, 0.05);
+            const lightMat = new THREE.MeshBasicMaterial({ color: 0xff0033 });
             const leftLight = new THREE.Mesh(lightGeo, lightMat);
-            leftLight.position.set(-0.6, 0.55, -1.8);
+            leftLight.position.set(-0.55, 0.5, -1.9);
             const rightLight = leftLight.clone();
-            rightLight.position.x = 0.6;
+            rightLight.position.x = 0.55;
             playerCarGroup.add(leftLight);
             playerCarGroup.add(rightLight);
 
-            const flameGeo = new THREE.ConeGeometry(0.15, 0.8, 8);
+            // 5. Twin Dual Exhaust Pipes
+            const exhaustGeo = new THREE.CylinderGeometry(0.08, 0.08, 0.3, 12);
+            exhaustGeo.rotateX(Math.PI / 2);
+            const exhaustMat = new THREE.MeshStandardMaterial({ color: 0x888888, metalness: 0.9, roughness: 0.1 });
+            
+            const ex1 = new THREE.Mesh(exhaustGeo, exhaustMat);
+            ex1.position.set(-0.25, 0.35, -1.95);
+            const ex2 = ex1.clone();
+            ex2.position.x = 0.25;
+            playerCarGroup.add(ex1);
+            playerCarGroup.add(ex2);
+
+            // 6. Nitro Flames (Twin blue jets)
+            const flameGeo = new THREE.ConeGeometry(0.12, 0.9, 8);
             flameGeo.rotateX(-Math.PI / 2);
             const flameMat = new THREE.MeshBasicMaterial({ color: 0x00f0ff });
-            const nitroFlame = new THREE.Mesh(flameGeo, flameMat);
-            nitroFlame.name = 'nitroFlame';
-            nitroFlame.position.set(0, 0.35, -2.2);
-            nitroFlame.visible = false;
-            playerCarGroup.add(nitroFlame);
+            
+            const nitroFlame1 = new THREE.Mesh(flameGeo, flameMat);
+            nitroFlame1.name = 'nitroFlame1';
+            nitroFlame1.position.set(-0.25, 0.35, -2.3);
+            nitroFlame1.visible = false;
+            playerCarGroup.add(nitroFlame1);
 
+            const nitroFlame2 = new THREE.Mesh(flameGeo, flameMat);
+            nitroFlame2.name = 'nitroFlame2';
+            nitroFlame2.position.set(0.25, 0.35, -2.3);
+            nitroFlame2.visible = false;
+            playerCarGroup.add(nitroFlame2);
+
+            // 7. Wide Wheels
             const wheelGeo = new THREE.CylinderGeometry(0.35, 0.35, 0.25, 16);
             wheelGeo.rotateZ(Math.PI / 2);
-            const wheelMat = new THREE.MeshStandardMaterial({ color: 0x222225, roughness: 0.8 });
+            const wheelMat = new THREE.MeshStandardMaterial({ color: 0x151518, roughness: 0.8 });
 
             const wheelPositions = [
-                [-0.85, 0.35, 1.1],
-                [0.85, 0.35, 1.1],
-                [-0.85, 0.35, -1.1],
-                [0.85, 0.35, -1.1]
+                [-0.9, 0.35, 1.1],
+                [0.9, 0.35, 1.1],
+                [-0.9, 0.35, -1.1],
+                [0.9, 0.35, -1.1]
             ];
 
             wheelPositions.forEach(pos => {
@@ -545,9 +585,9 @@
             roadMesh.receiveShadow = true;
             segmentGroup.add(roadMesh);
 
-            // Side Vibrant Ground (Green / Cyber Turquoise Terrain)
+            // Side Green Hills / Grass Ground
             const groundGeo = new THREE.PlaneGeometry(200, 20);
-            const groundMat = new THREE.MeshStandardMaterial({ color: 0x0f2b3c, roughness: 0.9 });
+            const groundMat = new THREE.MeshStandardMaterial({ color: 0x4ade80, roughness: 0.9 });
             const leftGround = new THREE.Mesh(groundGeo, groundMat);
             leftGround.rotation.x = -Math.PI / 2;
             leftGround.position.set(-100 - roadWidth/2, -0.05, 0);
@@ -559,9 +599,9 @@
             segmentGroup.add(leftGround);
             segmentGroup.add(rightGround);
 
-            // 3 Lanes Dividers (Dashed White Lines)
+            // 3 Lanes Dividers (Dashed Yellow Lines)
             const lineGeo = new THREE.PlaneGeometry(0.18, 4);
-            const lineMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+            const lineMat = new THREE.MeshBasicMaterial({ color: 0xfacc15 });
 
             [-laneWidth/2, laneWidth/2].forEach(xLoc => {
                 for (let k = -8; k <= 8; k += 8) {
@@ -572,42 +612,18 @@
                 }
             });
 
-            // Side Metal Guardrail Barriers
-            const railGeo = new THREE.BoxGeometry(0.3, 0.7, 20);
-            const railMat = new THREE.MeshStandardMaterial({ color: 0xd1d5db, metalness: 0.9, roughness: 0.2 });
-
-            const curbGeo = new THREE.BoxGeometry(0.6, 0.25, 20);
-            const curbMat = new THREE.MeshStandardMaterial({ color: 0xef4444, roughness: 0.5 });
+            // Side Barricades
+            const railGeo = new THREE.BoxGeometry(0.3, 0.6, 20);
+            const railMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.2 });
 
             const leftRail = new THREE.Mesh(railGeo, railMat);
-            leftRail.position.set(-roadWidth / 2 - 0.2, 0.45, 0);
+            leftRail.position.set(-roadWidth / 2 - 0.2, 0.3, 0);
 
             const rightRail = new THREE.Mesh(railGeo, railMat);
-            rightRail.position.set(roadWidth / 2 + 0.2, 0.45, 0);
-
-            const leftCurb = new THREE.Mesh(curbGeo, curbMat);
-            leftCurb.position.set(-roadWidth / 2 - 0.1, 0.1, 0);
-
-            const rightCurb = new THREE.Mesh(curbGeo, curbMat);
-            rightCurb.position.set(roadWidth / 2 + 0.1, 0.1, 0);
+            rightRail.position.set(roadWidth / 2 + 0.2, 0.3, 0);
 
             segmentGroup.add(leftRail);
             segmentGroup.add(rightRail);
-            segmentGroup.add(leftCurb);
-            segmentGroup.add(rightCurb);
-
-            // Side Street Light Poles / Props
-            if (Math.random() > 0.4) {
-                const poleGeo = new THREE.CylinderGeometry(0.1, 0.1, 8);
-                const poleMat = new THREE.MeshStandardMaterial({ color: 0x475569 });
-                const pole = new THREE.Mesh(poleGeo, poleMat);
-                pole.position.set(-roadWidth / 2 - 1.5, 4, 0);
-                segmentGroup.add(pole);
-
-                const lightHead = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.3, 0.4), new THREE.MeshBasicMaterial({ color: 0x00f0ff }));
-                lightHead.position.set(-roadWidth / 2 - 1.0, 7.8, 0);
-                segmentGroup.add(lightHead);
-            }
 
             scene.add(segmentGroup);
             roadSegments.push(segmentGroup);
@@ -678,7 +694,6 @@
         function updatePlayerControls(delta) {
             const carData = CAR_DATABASE[selectedCarIndex];
 
-            // Acceleration & Braking
             if (inputs.up) {
                 targetSpeed += carData.acceleration * 60 * delta;
             } else if (inputs.brake) {
@@ -687,23 +702,23 @@
                 targetSpeed -= 15 * delta;
             }
 
-            // Nitro Boost
-            const nitroFlame = playerCarGroup.getObjectByName('nitroFlame');
+            const nitroFlame1 = playerCarGroup.getObjectByName('nitroFlame1');
+            const nitroFlame2 = playerCarGroup.getObjectByName('nitroFlame2');
+            
             if (inputs.nitro && currentSpeed > 30) {
                 targetSpeed += carData.acceleration * 100 * delta;
-                if (nitroFlame) nitroFlame.visible = true;
+                if (nitroFlame1) nitroFlame1.visible = true;
+                if (nitroFlame2) nitroFlame2.visible = true;
                 sound.playNitroSound();
             } else {
-                if (nitroFlame) nitroFlame.visible = false;
+                if (nitroFlame1) nitroFlame1.visible = false;
+                if (nitroFlame2) nitroFlame2.visible = false;
             }
 
             const maxCap = inputs.nitro ? carData.maxSpeed * carData.nitroMultiplier : carData.maxSpeed;
             targetSpeed = Math.max(0, Math.min(targetSpeed, maxCap));
             currentSpeed += (targetSpeed - currentSpeed) * 0.1;
 
-            // CORRECTED STEERING LOGIC (CAMERA PERSPECTIVE COMPATIBLE)
-            // Left Button -> Move Left (+X) & Tilt Left (-y rotation)
-            // Right Button -> Move Right (-X) & Tilt Right (+y rotation)
             if (inputs.left) {
                 playerX += carData.handling * 25 * delta;
                 playerCarGroup.rotation.y = THREE.MathUtils.lerp(playerCarGroup.rotation.y, -0.15, 0.1);
@@ -719,7 +734,7 @@
             playerCarGroup.position.z += distanceDelta;
             playerCarGroup.position.x = playerX;
 
-            camera.position.z = playerCarGroup.position.z - 6.5;
+            camera.position.z = playerCarGroup.position.z - 7.5;
             camera.position.x = THREE.MathUtils.lerp(camera.position.x, playerCarGroup.position.x * 0.6, 0.1);
         }
 
@@ -732,7 +747,6 @@
         }
 
         function updateTraffic(delta) {
-            // Keep plenty of traffic on screen (up to 10 vehicles)
             if (Math.random() < 0.04 && trafficCars.length < 10) {
                 spawnTrafficCar();
             }
@@ -741,13 +755,11 @@
                 const moveDist = (traffic.userData.speed / 3.6) * delta;
                 traffic.position.z += moveDist;
 
-                // OVERTAKE DETECTION LOGIC (+10 COINS)
                 if (!traffic.userData.overtaken && traffic.position.z < playerCarGroup.position.z - 1.0) {
                     traffic.userData.overtaken = true;
                     addOvertakeCoins(10);
                 }
 
-                // Remove traffic far behind
                 if (traffic.position.z < playerCarGroup.position.z - 25) {
                     scene.remove(traffic);
                     trafficCars.splice(index, 1);
@@ -796,13 +808,11 @@
         function checkCollisions() {
             const barrierLimitX = (roadWidth / 2) - 0.9;
 
-            // 1. BARRIER COLLISION CHECK
             if (Math.abs(playerX) >= barrierLimitX) {
                 triggerCrash("CRASH! You smashed into the side highway barrier!");
                 return;
             }
 
-            // 2. TRAFFIC VEHICLE COLLISION CHECK
             trafficCars.forEach(traffic => {
                 const xDiff = Math.abs(traffic.position.x - playerCarGroup.position.x);
                 const zDiff = Math.abs(traffic.position.z - playerCarGroup.position.z);
@@ -871,7 +881,6 @@
         }
 
         function setupEventListeners() {
-            // Keyboard Controls (A / Left Arrow -> Left, D / Right Arrow -> Right)
             window.addEventListener('keydown', e => {
                 sound.init();
                 if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') inputs.up = true;
@@ -889,7 +898,6 @@
                 if (e.key === 'Shift') inputs.nitro = false;
             });
 
-            // Touch Control Buttons Handler
             const bindTouchBtn = (id, keyName) => {
                 const btn = document.getElementById(id);
                 if (!btn) return;
@@ -1019,3 +1027,4 @@
     </script>
 </body>
 </html>
+
